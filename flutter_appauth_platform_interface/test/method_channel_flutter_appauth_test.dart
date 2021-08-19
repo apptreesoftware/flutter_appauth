@@ -38,6 +38,7 @@ void main() {
           'additionalParameters': null,
           'allowInsecureConnections': false,
           'preferEphemeralSession': false,
+          'preferrediOSBrowser': null,
           'promptValues': null,
           'responseMode': null
         })
@@ -48,7 +49,9 @@ void main() {
   test('authorizeAndExchangeCode', () async {
     await flutterAppAuth.authorizeAndExchangeCode(AuthorizationTokenRequest(
         'someClientId', 'someRedirectUrl',
-        discoveryUrl: 'someDiscoveryUrl', loginHint: 'someLoginHint', responseMode: 'fragment'));
+        discoveryUrl: 'someDiscoveryUrl',
+        loginHint: 'someLoginHint',
+        responseMode: 'fragment'));
     expect(
       log,
       <Matcher>[
@@ -63,6 +66,7 @@ void main() {
           'additionalParameters': null,
           'allowInsecureConnections': false,
           'preferEphemeralSession': false,
+          'preferrediOSBrowser': null,
           'promptValues': null,
           'clientSecret': null,
           'refreshToken': null,

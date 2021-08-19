@@ -19,6 +19,7 @@ class AuthorizationTokenRequest extends TokenRequest
     List<String>? promptValues,
     bool allowInsecureConnections = false,
     bool preferEphemeralSession = false,
+    String? preferrediOSBrowser,
     String? responseMode,
   }) : super(
           clientId,
@@ -36,5 +37,6 @@ class AuthorizationTokenRequest extends TokenRequest
     this.promptValues = promptValues;
     this.preferEphemeralSession = preferEphemeralSession;
     this.responseMode = responseMode;
+    this.preferrediOSBrowser = preferrediOSBrowser;
   }
 }

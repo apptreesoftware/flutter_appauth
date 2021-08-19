@@ -81,6 +81,7 @@ Map<String, Object?> _convertAuthorizationParametersToMap(
     'loginHint': authorizationParameters.loginHint,
     'promptValues': authorizationParameters.promptValues,
     'preferEphemeralSession': authorizationParameters.preferEphemeralSession,
+    'preferrediOSBrowser': authorizationParameters.preferrediOSBrowser,
     'responseMode': authorizationParameters.responseMode,
   };
 }

@@ -17,6 +17,7 @@ class AuthorizationRequest extends CommonRequestDetails
     List<String>? promptValues,
     bool allowInsecureConnections = false,
     bool preferEphemeralSession = false,
+    String? preferredIOSBrowser,
     String? responseMode,
   }) {
     this.clientId = clientId;
@@ -31,5 +32,6 @@ class AuthorizationRequest extends CommonRequestDetails
     this.allowInsecureConnections = allowInsecureConnections;
     this.preferEphemeralSession = preferEphemeralSession;
     this.responseMode = responseMode;
+    this.preferrediOSBrowser = preferredIOSBrowser;
   }
 }

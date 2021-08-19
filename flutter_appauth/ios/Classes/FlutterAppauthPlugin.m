@@ -27,6 +27,7 @@
 @property(nonatomic, strong) NSDictionary *serviceConfigurationParameters;
 @property(nonatomic, strong) NSDictionary *additionalParameters;
 @property(nonatomic, readwrite) BOOL preferEphemeralSession;
+@property(nonatomic, strong) NSString *preferrediOSBrowser;
 
 @end
 
@@ -45,6 +46,7 @@
     _serviceConfigurationParameters = [ArgumentProcessor processArgumentValue:arguments withKey:@"serviceConfiguration"];
     _additionalParameters = [ArgumentProcessor processArgumentValue:arguments withKey:@"additionalParameters"];
     _preferEphemeralSession = [[ArgumentProcessor processArgumentValue:arguments withKey:@"preferEphemeralSession"] isEqual:@YES];
+    _preferrediOSBrowser = [ArgumentProcessor processArgumentValue:arguments withKey:@"preferrediOSBrowser"];
 }
 
 - (id)initWithArguments:(NSDictionary *)arguments {
@@ -131,39 +133,39 @@ NSString *const AUTHORIZE_ERROR_MESSAGE_FORMAT = @"Failed to authorize: %@";
         [[OIDServiceConfiguration alloc]
          initWithAuthorizationEndpoint:[NSURL URLWithString:requestParameters.serviceConfigurationParameters[@"authorizationEndpoint"]]
          tokenEndpoint:[NSURL URLWithString:requestParameters.serviceConfigurationParameters[@"tokenEndpoint"]]];
-        [self performAuthorization:serviceConfiguration clientId:requestParameters.clientId clientSecret:requestParameters.clientSecret scopes:requestParameters.scopes redirectUrl:requestParameters.redirectUrl additionalParameters:requestParameters.additionalParameters preferEphemeralSession:requestParameters.preferEphemeralSession result:result exchangeCode:exchangeCode];
+        [self performAuthorization:serviceConfiguration clientId:requestParameters.clientId clientSecret:requestParameters.clientSecret scopes:requestParameters.scopes redirectUrl:requestParameters.redirectUrl additionalParameters:requestParameters.additionalParameters preferEphemeralSession:requestParameters.preferEphemeralSession result:result exchangeCode:exchangeCode preferredBrowser: requestParameters.preferrediOSBrowser];
     } else if (requestParameters.discoveryUrl) {
         NSURL *discoveryUrl = [NSURL URLWithString:requestParameters.discoveryUrl];
         [OIDAuthorizationService discoverServiceConfigurationForDiscoveryURL:discoveryUrl
                                                                   completion:^(OIDServiceConfiguration *_Nullable configuration,
                                                                                NSError *_Nullable error) {
-                                                                      
+
                                                                       if (!configuration) {
                                                                           [self finishWithDiscoveryError:error result:result];
                                                                           return;
                                                                       }
-                                                                      
-                                                                      [self performAuthorization:configuration clientId:requestParameters.clientId clientSecret:requestParameters.clientSecret scopes:requestParameters.scopes redirectUrl:requestParameters.redirectUrl additionalParameters:requestParameters.additionalParameters preferEphemeralSession:requestParameters.preferEphemeralSession result:result exchangeCode:exchangeCode];
+
+                                                                      [self performAuthorization:configuration clientId:requestParameters.clientId clientSecret:requestParameters.clientSecret scopes:requestParameters.scopes redirectUrl:requestParameters.redirectUrl additionalParameters:requestParameters.additionalParameters preferEphemeralSession:requestParameters.preferEphemeralSession result:result exchangeCode:exchangeCode preferredBrowser: requestParameters.preferrediOSBrowser];
                                                                   }];
     } else {
         NSURL *issuerUrl = [NSURL URLWithString:requestParameters.issuer];
         [OIDAuthorizationService discoverServiceConfigurationForIssuer:issuerUrl
                                                             completion:^(OIDServiceConfiguration *_Nullable configuration,
                                                                          NSError *_Nullable error) {
-                                                                
+
                                                                 if (!configuration) {
                                                                     [self finishWithDiscoveryError:error result:result];
                                                                     return;
                                                                 }
-                                                                
-            [self performAuthorization:configuration clientId:requestParameters.clientId clientSecret:requestParameters.clientSecret scopes:requestParameters.scopes redirectUrl:requestParameters.redirectUrl additionalParameters:requestParameters.additionalParameters preferEphemeralSession:requestParameters.preferEphemeralSession result:result exchangeCode:exchangeCode];
+
+            [self performAuthorization:configuration clientId:requestParameters.clientId clientSecret:requestParameters.clientSecret scopes:requestParameters.scopes redirectUrl:requestParameters.redirectUrl additionalParameters:requestParameters.additionalParameters preferEphemeralSession:requestParameters.preferEphemeralSession result:result exchangeCode:exchangeCode preferredBrowser:requestParameters.preferrediOSBrowser];
                                                             }];
     }
-    
-    
+
+
 }
 
-- (void)performAuthorization:(OIDServiceConfiguration *)serviceConfiguration clientId:(NSString*)clientId clientSecret:(NSString*)clientSecret scopes:(NSArray *)scopes redirectUrl:(NSString*)redirectUrl additionalParameters:(NSDictionary *)additionalParameters preferEphemeralSession:(BOOL)preferEphemeralSession result:(FlutterResult)result exchangeCode:(BOOL)exchangeCode{
+- (void)performAuthorization:(OIDServiceConfiguration *)serviceConfiguration clientId:(NSString*)clientId clientSecret:(NSString*)clientSecret scopes:(NSArray *)scopes redirectUrl:(NSString*)redirectUrl additionalParameters:(NSDictionary *)additionalParameters preferEphemeralSession:(BOOL)preferEphemeralSession result:(FlutterResult)result exchangeCode:(BOOL)exchangeCode preferredBrowser:(NSString *)preferredBrowser {
     OIDAuthorizationRequest *request =
     [[OIDAuthorizationRequest alloc] initWithConfiguration:serviceConfiguration
                                                   clientId:clientId
@@ -175,19 +177,19 @@ NSString *const AUTHORIZE_ERROR_MESSAGE_FORMAT = @"Failed to authorize: %@";
     UIViewController *rootViewController =
     [UIApplication sharedApplication].delegate.window.rootViewController;
     if(exchangeCode) {
-        NSObject<OIDExternalUserAgent> *agent = [self userAgentWithViewController:rootViewController useEphemeralSession:preferEphemeralSession];
-        
+        NSObject<OIDExternalUserAgent> *agent = [self userAgentWithViewController:rootViewController useEphemeralSession:preferEphemeralSession preferredBrowser:preferredBrowser];
+
         _currentAuthorizationFlow = [OIDAuthState authStateByPresentingAuthorizationRequest:request externalUserAgent:agent callback:^(OIDAuthState *_Nullable authState,
                    NSError *_Nullable error) {
             if(authState) {
                 result([self processResponses:authState.lastTokenResponse authResponse:authState.lastAuthorizationResponse]);
-                
+
             } else {
                 [self finishWithError:AUTHORIZE_AND_EXCHANGE_CODE_ERROR_CODE message:[self formatMessageWithError:AUTHORIZE_ERROR_MESSAGE_FORMAT error:error] result:result];
             }
         }];
     } else {
-        NSObject<OIDExternalUserAgent> *agent = [self userAgentWithViewController:rootViewController useEphemeralSession:preferEphemeralSession];
+        NSObject<OIDExternalUserAgent> *agent = [self userAgentWithViewController:rootViewController useEphemeralSession:preferEphemeralSession preferredBrowser:preferredBrowser];
         _currentAuthorizationFlow = [OIDAuthorizationService presentAuthorizationRequest:request externalUserAgent:agent callback:^(OIDAuthorizationResponse *_Nullable authorizationResponse, NSError *_Nullable error) {
             if(authorizationResponse) {
                 NSMutableDictionary *processedResponse = [[NSMutableDictionary alloc] init];
@@ -202,11 +204,29 @@ NSString *const AUTHORIZE_ERROR_MESSAGE_FORMAT = @"Failed to authorize: %@";
     }
 }
 
-- (id<OIDExternalUserAgent>)userAgentWithViewController:(UIViewController *)rootViewController useEphemeralSession:(BOOL)useEphemeralSession {
+- (id<OIDExternalUserAgent>)userAgentWithViewController:(UIViewController *)rootViewController useEphemeralSession:(BOOL)useEphemeralSession preferredBrowser:(NSString *)preferredBrowser {
+    
+    if (preferredBrowser) {
+        if ([preferredBrowser isEqualToString:@"edge"]) {
+            OIDCustomBrowserURLTransformation transform = [OIDExternalUserAgentIOSCustomBrowser URLTransformationSchemeSubstitutionHTTPS:@"microsoft-edge-https" HTTP:@"microsoft-edge-http"];
+            NSURL *appStoreURL =
+            [NSURL URLWithString:@"itms-apps://itunes.apple.com/us/app/microsoft-edge-web-browser/id1288723196"];
+            return [[OIDExternalUserAgentIOSCustomBrowser alloc] initWithURLTransformation:transform
+                                                  canOpenURLScheme:@"microsoft-edge-https"
+                                                       appStoreURL:appStoreURL];
+        } else if ([preferredBrowser isEqualToString:@"chrome"]) {
+            return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserChrome];
+        } else if ([preferredBrowser isEqualToString:@"safari"]) {
+            return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserSafari];
+        } else if ([preferredBrowser isEqualToString:@"firefox"]) {
+            return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserFirefox];
+        }
+    }
     if (useEphemeralSession) {
         return [[OIDExternalUserAgentIOSNoSSO alloc]
                 initWithPresentingViewController:rootViewController];
     }
+
     return [[OIDExternalUserAgentIOS alloc]
             initWithPresentingViewController:rootViewController];
 }
@@ -236,16 +256,16 @@ NSString *const AUTHORIZE_ERROR_MESSAGE_FORMAT = @"Failed to authorize: %@";
         [self performTokenRequest:serviceConfiguration requestParameters:requestParameters result:result];
     } else if (requestParameters.discoveryUrl) {
         NSURL *discoveryUrl = [NSURL URLWithString:requestParameters.discoveryUrl];
-        
+
         [OIDAuthorizationService discoverServiceConfigurationForDiscoveryURL:discoveryUrl
                                                                   completion:^(OIDServiceConfiguration *_Nullable configuration,
                                                                                NSError *_Nullable error) {
-                                                                      
+
                                                                       if (!configuration) {
                                                                           [self finishWithDiscoveryError:error result:result];
                                                                           return;
                                                                       }
-                                                                      
+
                                                                       [self performTokenRequest:configuration requestParameters:requestParameters result:result];
                                                                   }];
     } else {
@@ -253,16 +273,16 @@ NSString *const AUTHORIZE_ERROR_MESSAGE_FORMAT = @"Failed to authorize: %@";
         [OIDAuthorizationService discoverServiceConfigurationForIssuer:issuerUrl
                                                             completion:^(OIDServiceConfiguration *_Nullable configuration,
                                                                          NSError *_Nullable error) {
-                                                                
+
                                                                 if (!configuration) {
                                                                     [self finishWithDiscoveryError:error result:result];
                                                                     return;
                                                                 }
-                                                                
+
                                                                 [self performTokenRequest:configuration requestParameters:requestParameters result:result];
                                                             }];
     }
-    
+
 }
 
 - (void)performTokenRequest:(OIDServiceConfiguration *)serviceConfiguration requestParameters:(TokenRequestParameters *)requestParameters result:(FlutterResult)result {
@@ -311,7 +331,7 @@ NSString *const AUTHORIZE_ERROR_MESSAGE_FORMAT = @"Failed to authorize: %@";
     if(tokenResponse.tokenType) {
         [processedResponses setValue:tokenResponse.tokenType forKey:@"tokenType"];
     }
-    
+
     return processedResponses;
 }
 
@@ -323,7 +343,7 @@ NSString *const AUTHORIZE_ERROR_MESSAGE_FORMAT = @"Failed to authorize: %@";
         _currentAuthorizationFlow = nil;
         return YES;
     }
-    
+
     return NO;
 }
 - (BOOL)application:(UIApplication *)application
