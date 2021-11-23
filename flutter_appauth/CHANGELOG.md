@@ -1,3 +1,31 @@
+## 2.1.0+1
+
+* Fix grammar in 2.1.0 changelog entry
+
+## 2.1.0
+
+* [Android] `ui_locales` can now be passed as part of the `additionalParameters` included with requests without triggering an exception by the AppAuth Android SDK. Thanks to the PR from [dimitristoz](https://github.com/dimitristoz)
+
+## 2.0.0
+
+* **Breaking change** `AuthorizationServiceConfiguration` constructor has changed to take named parameters
+* Added `endSession()` method, `EndSessionRequest` and `EndSessionResponse` classes to support end session requests
+* [Android] skips https issuer check if `allowInsecureConnections` is true. Thanks to the PR from [Roman Fürst](https://github.com/rfuerst87)
+* Bumped AppAuth Android and iOS SDK dependencies
+* Added FAQs section to readme to describe a common iOS issue with Azure B2C and Azure AD
+
+## 1.1.1
+
+* [Android] Migrate maven repository from jcenter to mavenCentral.
+
+## 1.1.0+2
+
+* Bumped AppAuth Android and iOS dependencies
+
+## 1.1.0+1
+
+* Updated the minimum version iOS supported by the example app to 9.0 since Flutter 2.5 has deprecated support for 8.0
+
 ## 1.1.0
 
 * * Added the ability to specify the response mode for authorization requests. This can be done using the `responseMode` parameter  when constructing either an `AuthorizationRequest` or `AuthorizationTokenRequest`. This was done as the AppAuth Android SDK throws an exception when this was done via `additionalParameters`

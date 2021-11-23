@@ -8,12 +8,12 @@ class AuthorizationRequest extends CommonRequestDetails
   AuthorizationRequest(
     String clientId,
     String redirectUrl, {
-    String? loginHint,
-    List<String>? scopes,
-    AuthorizationServiceConfiguration? serviceConfiguration,
-    Map<String, String>? additionalParameters,
     String? issuer,
     String? discoveryUrl,
+    AuthorizationServiceConfiguration? serviceConfiguration,
+    String? loginHint,
+    List<String>? scopes,
+    Map<String, String>? additionalParameters,
     List<String>? promptValues,
     bool allowInsecureConnections = false,
     bool preferEphemeralSession = false,
@@ -33,5 +33,6 @@ class AuthorizationRequest extends CommonRequestDetails
     this.preferEphemeralSession = preferEphemeralSession;
     this.responseMode = responseMode;
     this.preferrediOSBrowser = preferredIOSBrowser;
+    assertConfigurationInfo();
   }
 }
