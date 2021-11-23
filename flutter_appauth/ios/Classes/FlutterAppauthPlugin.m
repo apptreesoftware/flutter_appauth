@@ -240,7 +240,7 @@ NSString *const END_SESSION_ERROR_MESSAGE_FORMAT = @"Failed to end session: %@";
                                                        appStoreURL:appStoreURL];
         } else if ([preferredBrowser isEqualToString:@"chrome"]) {
             return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserChrome];
-        } else if ([preferredBrowser isEqualToString:@"safari"]) {
+    } else if ([preferredBrowser isEqualToString:@"safari"]) {
             return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserSafari];
         } else if ([preferredBrowser isEqualToString:@"firefox"]) {
             return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserFirefox];
@@ -356,7 +356,7 @@ NSString *const END_SESSION_ERROR_MESSAGE_FORMAT = @"Failed to end session: %@";
 
     UIViewController *rootViewController =
     [UIApplication sharedApplication].delegate.window.rootViewController;
-    id<OIDExternalUserAgent> externalUserAgent = [self userAgentWithViewController:rootViewController useEphemeralSession:false];
+    id<OIDExternalUserAgent> externalUserAgent = [self userAgentWithViewController:rootViewController useEphemeralSession:false preferredBrowser:NULL];
 
 
     _currentAuthorizationFlow = [OIDAuthorizationService presentEndSessionRequest:endSessionRequest externalUserAgent:externalUserAgent callback:^(OIDEndSessionResponse * _Nullable endSessionResponse, NSError * _Nullable error) {
