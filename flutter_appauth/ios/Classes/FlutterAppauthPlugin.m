@@ -229,18 +229,25 @@ NSString *const END_SESSION_ERROR_MESSAGE_FORMAT = @"Failed to end session: %@";
 }
 
 - (id<OIDExternalUserAgent>)userAgentWithViewController:(UIViewController *)rootViewController useEphemeralSession:(BOOL)useEphemeralSession preferredBrowser:(NSString *)preferredBrowser {
-
+    
     if (preferredBrowser) {
         if ([preferredBrowser isEqualToString:@"edge"]) {
             OIDCustomBrowserURLTransformation transform = [OIDExternalUserAgentIOSCustomBrowser URLTransformationSchemeSubstitutionHTTPS:@"microsoft-edge-https" HTTP:@"microsoft-edge-http"];
             NSURL *appStoreURL =
             [NSURL URLWithString:@"itms-apps://itunes.apple.com/us/app/microsoft-edge-web-browser/id1288723196"];
             return [[OIDExternalUserAgentIOSCustomBrowser alloc] initWithURLTransformation:transform
-                                                  canOpenURLScheme:@"microsoft-edge-https"
-                                                       appStoreURL:appStoreURL];
+                                                                          canOpenURLScheme:@"microsoft-edge-https"
+                                                                               appStoreURL:appStoreURL];
+        } else if ([preferredBrowser isEqualToString:@"airwatch"]) {
+            OIDCustomBrowserURLTransformation transform = [OIDExternalUserAgentIOSCustomBrowser URLTransformationSchemeSubstitutionHTTPS:@"awbs" HTTP:@"awb"];
+            NSURL *appStoreURL =
+            [NSURL URLWithString:@"itms-apps://itunes.apple.com/us/app/web-workspace-one/id525891468"];
+            return [[OIDExternalUserAgentIOSCustomBrowser alloc] initWithURLTransformation:transform
+                                                                          canOpenURLScheme:@"awbs"
+                                                                               appStoreURL:appStoreURL];
         } else if ([preferredBrowser isEqualToString:@"chrome"]) {
             return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserChrome];
-    } else if ([preferredBrowser isEqualToString:@"safari"]) {
+        } else if ([preferredBrowser isEqualToString:@"safari"]) {
             return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserSafari];
         } else if ([preferredBrowser isEqualToString:@"firefox"]) {
             return [OIDExternalUserAgentIOSCustomBrowser CustomBrowserFirefox];
@@ -250,7 +257,7 @@ NSString *const END_SESSION_ERROR_MESSAGE_FORMAT = @"Failed to end session: %@";
         return [[OIDExternalUserAgentIOSNoSSO alloc]
                 initWithPresentingViewController:rootViewController];
     }
-
+    
     return [[OIDExternalUserAgentIOS alloc]
             initWithPresentingViewController:rootViewController];
 }
